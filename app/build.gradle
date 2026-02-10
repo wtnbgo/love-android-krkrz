@@ -6,31 +6,39 @@ plugins {
 
 android {
     namespace "org.love2d.android"
-    ndkVersion '27.1.12297006'
+    compileSdk {
+        version = release(36)
+    }
+
+    ndkVersion "28.2.13676358"
+
 
     defaultConfig {
         applicationId project.properties["app.application_id"]
         versionCode project.properties["app.version_code"].toInteger()
         versionName project.properties["app.version_name"]
-        minSdk 23
-        compileSdk 35
-        targetSdk 35
+        minSdk 29
 
         externalNativeBuild {
             cmake {
-                arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=1", "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON"
+                cppFlags "-std=c++17"
+                arguments "-DANDROID_STL=c++_shared", 
+                    "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=1", 
+                    "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
+                    "-DCMAKE_TOOLCHAIN_FILE=${System.getenv('VCPKG_ROOT')}/scripts/buildsystems/vcpkg.cmake",
+                    "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${android.ndkDirectory}/build/cmake/android.toolchain.cmake"
                 // https://issuetracker.google.com/issues/274493986
                 // Transitive shared library that's added through `add_dependencies` is not taken into
                 // account. This result in liboboe.so and libluajit.so not get included into the final
                 // APK. "love" target depends on LuaJIT, and "OpenAL" target depends on oboe::oboe
                 // (which provides liboboe.so). So, add "OpenAL" and "love" target.
-                targets "love_android", "OpenAL", "love"
+                targets "love_android", "OpenAL", "love", "krkrzbase"
+                abiFilters 'arm64-v8a', 'x86_64'
             }
         }
 
         ndk {
             //noinspection ChromeOsAbiSupport
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
             debugSymbolLevel 'full'
         }
 

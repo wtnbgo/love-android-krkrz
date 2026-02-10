@@ -20,6 +20,27 @@
 
 cmake_minimum_required(VERSION 3.21)
 
+# Set vcpkg triplet based on ANDROID_ABI
+# 本来は vcpkg 側で自動判定されるべきだがうまくされないので手動設定
+# これをしないと vcpkg.json で x64-android 用のライブラリが適切にインストールされない
+if(DEFINED ANDROID_ABI)
+	if(ANDROID_ABI STREQUAL "armeabi-v7a")
+		set(VCPKG_TARGET_TRIPLET "arm-android")
+	elseif(ANDROID_ABI STREQUAL "arm64-v8a")
+		set(VCPKG_TARGET_TRIPLET "arm64-android")
+	elseif(ANDROID_ABI STREQUAL "x86")
+		set(VCPKG_TARGET_TRIPLET "x86-android")
+	elseif(ANDROID_ABI STREQUAL "x86_64")
+		set(VCPKG_TARGET_TRIPLET "x64-android")
+	else()
+		message(WARNING "Unknown ANDROID_ABI '${ANDROID_ABI}'. VCPKG_TARGET_TRIPLET not changed.")
+	endif()
+	message(STATUS "VCPKG_TARGET_TRIPLET set to '${VCPKG_TARGET_TRIPLET}' for ANDROID_ABI='${ANDROID_ABI}'")
+else()
+	message(WARNING "ANDROID_ABI not defined; VCPKG_TARGET_TRIPLET not changed.")
+endif()
+
+
 project(love-android LANGUAGES C CXX)
 
 add_custom_target(love_android)
