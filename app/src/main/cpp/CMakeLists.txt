@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.21)
 
 # Set vcpkg triplet based on ANDROID_ABI
 # 本来は vcpkg 側で自動判定されるべきだがうまくされないので手動設定
-# これをしないと vcpkg.json で x64-android 用のライブラリが適切にインストールされない
+# これをしないと vcpkg.json での x64-android 用のライブラリが適切にインストールされない
 if(DEFINED ANDROID_ABI)
 	if(ANDROID_ABI STREQUAL "armeabi-v7a")
 		set(VCPKG_TARGET_TRIPLET "arm-android")
@@ -35,9 +35,18 @@ if(DEFINED ANDROID_ABI)
 	else()
 		message(WARNING "Unknown ANDROID_ABI '${ANDROID_ABI}'. VCPKG_TARGET_TRIPLET not changed.")
 	endif()
-	message(STATUS "VCPKG_TARGET_TRIPLET set to '${VCPKG_TARGET_TRIPLET}' for ANDROID_ABI='${ANDROID_ABI}'")
+	message(STATUS "Set VCPKG_TARGET_TRIPLET set to '${VCPKG_TARGET_TRIPLET}' for ANDROID_ABI='${ANDROID_ABI}'")
 else()
 	message(WARNING "ANDROID_ABI not defined; VCPKG_TARGET_TRIPLET not changed.")
+endif()
+
+# cmake 呼び出し時に引き渡されている ANDROKD_NDK 変数の値で環境変数 ANDROID_NDK_HOME を上書き
+# vcpkg.json のインストール処理は ANDROID_NDK_HOME を参照するので、上書きしてやらないと整合がとれなくなる
+if (DEFINED ANDROID_NDK)
+	set(ENV{ANDROID_NDK_HOME} "${ANDROID_NDK}")
+	message(STATUS "Set ENV{ANDROID_NDK_HOME} to '${ANDROID_NDK}' for vcpkg")
+else()
+	message(WARNING "ANDROID_NDK not defined; ENV{ANDROID_NDK_HOME} not changed.")
 endif()
 
 
