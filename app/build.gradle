@@ -138,6 +138,9 @@ android {
                 srcDir 'src/main/cpp/love/src/libraries/luahttps/src/android/java'
                 srcDirs += retrieveAll3pModules()
             }
+            assets {
+                srcDirs += ["${buildDir}/generated/krkrz_assets"]
+            }
         }
         normal {
             java {
@@ -173,6 +176,33 @@ android {
                 'lib/x86_64/libOpenSLES.so'
             ]
         }
+    }
+}
+
+// krkrzbase assets をビルド時に一時フォルダにコピーするタスク
+def krkrzAssetsDir = "${buildDir}/generated/krkrz_assets"
+
+task copyKrkrzAssets(type: Copy) {
+    description = 'Copies krkrzbase assets to temporary folder'
+    
+    // love2d の内容を assets/krkrz にコピー
+    from('src/main/cpp/lua-modules/krkrzbase/love2d') {
+        into 'krkrz'
+        exclude 'README.md'
+    }
+    
+    // krkrz/resource の内容を assets/krkrz/resource にコピー
+    from('src/main/cpp/lua-modules/krkrzbase/krkrz/resource') {
+        into 'krkrz/resource'
+    }
+    
+    into krkrzAssetsDir
+}
+
+// preBuild前にコピータスクを実行
+tasks.configureEach { task ->
+    if (task.name == 'preBuild') {
+        task.dependsOn copyKrkrzAssets
     }
 }
 
